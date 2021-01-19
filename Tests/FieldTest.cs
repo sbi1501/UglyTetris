@@ -1,20 +1,36 @@
-using System;
 using System.Collections.Generic;
-using System.Windows.Documents;
 using FluentAssertions;
 using UglyTetris.GameLogic;
 using Xunit;
-using Newtonsoft.Json;
 
 namespace Tests
 {
     public class FieldTest
     {
-        private static Tile T() => new Tile("Brown");
+        private static Tile T() => new Tile();
+        private static TileXy Txy(int x, int y) => new TileXy {Tile = T(), X = x, Y = y};
 
-        private static List<Field> Fields = new List<Field>()
+        private static readonly Field EmptyField = new Field(
+            new[,]
+            {
+                // 0 -> Y
+                // | 
+                // v X 
+                {T(), T(), T(), T(), T(), T(), T(), T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {null, null, null, null, null, null, null, T(),},
+                {T(), T(), T(), T(), T(), T(), T(), T(),},
+            });
+
+        private static readonly List<Field> Fields = new List<Field>
         {
-            new Field(new Tile[,]
+            new Field(new[,]
             {
                 // 0 -> Y
                 // | 
@@ -30,7 +46,7 @@ namespace Tests
                 {null, null, null, null, null, null, T(), T(),},
                 {T(), T(), T(), T(), T(), T(), T(), T(),},
             }),
-            new Field(new Tile[,]
+            new Field(new[,]
                 {
                     // 0 -> Y
                     // | 
@@ -47,7 +63,7 @@ namespace Tests
                     {T(), T(), T(), T(), T(), T(), T(), T(),},
                 }
             ),
-            new Field(new Tile[,]
+            new Field(new[,]
                 {
                     // 0 -> Y
                     // | 
@@ -65,21 +81,6 @@ namespace Tests
                 }
             )
         };
-        
-        private static Field EmptyField = new Field(new Tile[,]
-        {
-            {T(), T(), T(), T(), T(), T(), T(), T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {null, null, null, null, null, null, null, T(),},
-            {T(), T(), T(), T(), T(), T(), T(), T(),},
-        });
-
 
         [Theory]
         [InlineData(0, 1)]
@@ -92,63 +93,40 @@ namespace Tests
         }
 
         [Fact]
-        public void TestCreateField()
+        public void CreateField()
         {
-            // TODO стоит ли использовать в данном случае теорию, а не факт?
-            var serializedEmptyField = JsonConvert.SerializeObject(EmptyField);
-            var testField = Field.CreateField(8, 7, "White");
-            var serializedTestField = JsonConvert.SerializeObject(testField);
-            
-            Assert.Equal(serializedEmptyField, serializedTestField);
+            var testField = Field.CreateField(EmptyField.Width, EmptyField.Height, "DimGray");
+            testField.Should().BeEquivalentTo(EmptyField);
         }
 
-        [Theory]
-        [InlineData(3, 3)]
-        [InlineData(8, 7)]
-        public void TestIsInBound(int width, int height)
+        [Fact]
+        public void IsInBounds()
         {
-            var testField = Field.CreateField(width, height, "White");
-
-            for (var i = testField.Xmin; i <= testField.Xmax; i++)
+            for (var i = EmptyField.Xmin; i <= EmptyField.Xmax; i++)
             {
-                for (var k = testField.Ymin; k <= testField.Ymax; k++)
+                for (var k = EmptyField.Ymin; k <= EmptyField.Ymax; k++)
                 {
-                    Assert.True(testField.IsInBounds(i, k));
-                }
-            }
-            
-            Assert.False(testField.IsInBounds(testField.Xmax + 1, testField.Ymax + 1));
-        }
-
-        [Theory]
-        [InlineData(3, 3)]
-        [InlineData(8, 7)]
-        public void TestIsEmpty(int width, int height)
-        {
-            var testField = Field.CreateField(width, height, "White");
-            
-            for (var i = testField.Xmin + 1; i < testField.Xmax - 1; i++)
-            {
-                for (var k = testField.Ymin; k < testField.Ymax; k++)
-                {
-                    Assert.True(testField.IsEmpty(i, k));
+                    EmptyField.IsInBounds(i, k).Should().BeTrue();
                 }
             }
 
-            var xCoords = new List<int> {testField.Xmin, testField.Xmax};
+            EmptyField.IsInBounds(EmptyField.Xmax + 1, EmptyField.Ymax + 1).Should().BeFalse();
+        }
 
-            foreach (var xCoord in xCoords)
+        [Fact]
+        public void GetTiles()
+        {
+            object[] tiles =
             {
-                for (var k = testField.Ymin; k < testField.Ymax; k++)
-                {
-                    Assert.False(testField.IsEmpty(xCoord, k));
-                }   
-            }
+                Txy(0, 0),
+                Txy(0, 1),
+                Txy(1, 1),
+                Txy(2, 0),
+                Txy(2, 1)
+            };
 
-            for (var i = testField.Xmin + 1; i < testField.Xmax; i++)
-            {
-                Assert.False(testField.IsEmpty(i, testField.Ymax));
-            }
+            var testFieldTiles = Field.CreateField(1, 1, "DimGray");
+            testFieldTiles.GetTiles().Should().BeEquivalentTo(tiles);
         }
     }
 }

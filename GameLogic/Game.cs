@@ -113,18 +113,21 @@ namespace UglyTetris.GameLogic
 
             RaiseFigureStateChanged();
         }
-
-        public void RotateAntiClockWise()
+        
+        public void MoveDown()
         {
-            Figure.RotateLeft();
+            FigurePositionY++;
+            
             if (!Field.IsPossibleToPlaceFigure(Figure, FigurePositionX, FigurePositionY))
             {
-                Figure.RotateRight();
+                FigurePositionY--;
+                return;
             }
+
             RaiseFigureStateChanged();
         }
 
-        public void RotateClockWise()
+        public void Rotate()
         {
             Figure.RotateRight();
             if (!Field.IsPossibleToPlaceFigure(Figure, FigurePositionX, FigurePositionY))

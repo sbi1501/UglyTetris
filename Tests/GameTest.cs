@@ -46,20 +46,20 @@ namespace Tests
 
             game.Figure.Should().BeEquivalentTo(notRotatedFigure);
 
-            game.RotateAntiClockWise();
+            game.Rotate();
 
             game.Figure.Should().NotBeEquivalentTo(notRotatedFigure);
 
             game.MoveLeft();
-            game.RotateAntiClockWise();
+            game.Rotate();
             game.MoveLeft();
-            game.RotateAntiClockWise();
+            game.Rotate();
             game.MoveLeft();
-            game.RotateAntiClockWise();
+            game.Rotate();
             game.MoveLeft();
-            game.RotateAntiClockWise();
+            game.Rotate();
             game.MoveLeft();
-            game.RotateAntiClockWise();
+            game.Rotate();
             game.MoveLeft();
             
             // now the figure is at the most left
@@ -67,7 +67,7 @@ namespace Tests
 
             var figureAtLeftWallCopy = new Figure(game.Figure);
             
-            game.RotateAntiClockWise();
+            game.Rotate();
             
             game.Figure.Should().BeEquivalentTo(figureAtLeftWallCopy);
         }

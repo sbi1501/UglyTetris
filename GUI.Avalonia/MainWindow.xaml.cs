@@ -71,13 +71,10 @@ namespace UglyTetris.AvaloniaGUI
 
         public Game Game;
         private readonly DispatcherTimer _timer;
-
         private FieldDrawer _fieldDrawer;
         private FigureDrawer _figureDrawer;
-
+        private FigureFactory _figureFactory = new FigureFactory();
         
-        
-
         private void MoveLeft()
         {
             Game.MoveLeft();
@@ -87,68 +84,65 @@ namespace UglyTetris.AvaloniaGUI
         {
             Game.MoveRight();
         }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        
+        private void MoveDown()
         {
-            MoveLeft();
+            Game.MoveDown();
         }
 
-        private void RotateAntiClockWise()
+        private void Rotate()
         {
-            Game.RotateAntiClockWise();
-        }
-
-        private void RotateClockWise()
-        {
-            Game.RotateClockWise();
+            Game.Rotate();
         }
 
         private void Drop()
         {
             Game.Drop();
         }
-        
-        private FigureFactory _figureFactory = new FigureFactory();
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Left)
+            switch (e.Key)
             {
-                MoveLeft();
-            }
-            else if (e.Key == Key.Right)
-            {
-                MoveRight();
-            }
-            else if (e.Key == Key.Up)
-            {
-                RotateAntiClockWise();
-            }
-            else if (e.Key == Key.Down)
-            {
-                RotateClockWise();
-            }
-
-            else if (e.Key == Key.Space)
-            {
-                Drop();
+                case Key.Left:
+                    MoveLeft();
+                    break;
+                case Key.Right:
+                    MoveRight();
+                    break;
+                case Key.Up:
+                    Rotate();
+                    break;
+                case Key.Down:
+                    MoveDown();
+                    break;
+                case Key.Space:
+                    Drop();
+                    break;
             }
         }
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        
+        private void HandleLeftButton(object sender, RoutedEventArgs e)
         {
-            RotateAntiClockWise();
+            MoveLeft();
         }
-
-        private void Button_Click_2(object sender, RoutedEventArgs e)
-        {
-            RotateClockWise();
-        }
-        private void Button_Click_3(object sender, RoutedEventArgs e)
+        
+        private void HandleRightButton(object sender, RoutedEventArgs e)
         {
             MoveRight();
         }
+        
+        private void HandleUpButton(object sender, RoutedEventArgs e)
+        {
+            Rotate();
+        }
 
-        private void Button_Click_4(object sender, RoutedEventArgs e)
+        private void HandleDownButton(object sender, RoutedEventArgs e)
+        {
+            MoveDown();
+        }
+
+        private void HandleSpaceButton(object sender, RoutedEventArgs e)
         {
             Drop();
         }

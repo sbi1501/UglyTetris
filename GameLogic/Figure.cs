@@ -15,17 +15,18 @@ namespace UglyTetris.GameLogic
             Tiles = new Tile[figure.Width, figure.Height];
 
             for (var x = 0; x < figure.Width; x++)
-            for (var y = 0; y < figure.Height; y++)
             {
-                var tile = figure.Tiles[x, y];
-                Tiles[x, y] = tile == null ? null : new Tile(tile.Color);
+                for (var y = 0; y < figure.Height; y++)
+                {
+                    var tile = figure.Tiles[x, y];
+                    Tiles[x, y] = tile == null ? null : new Tile(tile.Color);
+                }    
             }
         }
 
         public Figure(string tileMap, string color)
         {
             var lines = tileMap.Split(Environment.NewLine);
-
             var width = lines.Max(l => l.Length);
             var height = lines.Length;
 
