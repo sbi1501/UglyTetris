@@ -7,8 +7,8 @@ namespace Tests
 {
     public class FieldTest
     {
-        private static Tile T() => new Tile();
-        private static TileXy Txy(int x, int y) => new TileXy {Tile = T(), X = x, Y = y};
+        private static Tile T(string color = "DimGray") => new Tile(color);
+        private static TileXy Txy(int x, int y, string color = "DimGray") => new TileXy {Tile = T(color), X = x, Y = y};
 
         private static readonly Field EmptyField = new Field(
             new[,]
@@ -125,8 +125,31 @@ namespace Tests
                 Txy(2, 1)
             };
 
-            var testFieldTiles = Field.CreateField(1, 1, "DimGray");
-            testFieldTiles.GetTiles().Should().BeEquivalentTo(tiles);
+            var testField = Field.CreateField(1, 1, "DimGray");
+            testField.GetTiles().Should().BeEquivalentTo(tiles);
+        }
+
+        [Fact]
+        public void AddLineBelow()
+        {
+            object[] tiles =
+            {
+                Txy(0, 0),
+                Txy(0, 1),
+                Txy(0, 2),
+                Txy(1, 1, "Orange"),
+                Txy(1, 2),
+                Txy(2, 1, "Orange"),
+                Txy(2, 2),
+                Txy(3, 0),
+                Txy(3, 1),
+                Txy(3, 2),
+            };
+            
+            var testField = Field.CreateField(2, 2, "DimGray");
+            testField.AddLineBelow(2);
+            var foo = testField.GetTiles(); 
+            testField.GetTiles().Should().BeEquivalentTo(tiles);
         }
     }
 }

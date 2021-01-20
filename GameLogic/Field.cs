@@ -169,7 +169,7 @@ namespace UglyTetris.GameLogic
             return remove;
         }
 
-        public void AddLineBelow()
+        public void AddLineBelow(int seed = 0)
         {
             var left = Xmin + 1;
             var right = Xmax - 1;
@@ -184,7 +184,7 @@ namespace UglyTetris.GameLogic
 
             for (var x = left; x <= right; x += 1)
             {
-                var r = new Random();
+                var r = seed != 0 ? new Random(seed) : new Random();
                 var randomType = r.Next(0, 2);
                 var tile = randomType == 1 ? new Tile("Orange") : null;
                 SetTile(x, Ymax - 1, tile);

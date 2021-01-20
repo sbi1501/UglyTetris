@@ -29,7 +29,7 @@ namespace UglyTetris.GameLogic
             }
         }
 
-        private int _level = 1;
+        private int _level = 0;
 
         public int Level
         {
