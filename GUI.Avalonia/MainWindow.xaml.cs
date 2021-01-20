@@ -1,11 +1,9 @@
 using System;
 using System.Globalization;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using Avalonia.Threading;
 using UglyTetris.GameLogic;
 
@@ -13,31 +11,35 @@ namespace UglyTetris.AvaloniaGUI
 {
     public class MainWindow : Window
     {
+        private readonly Game _game;
+        private readonly DispatcherTimer _timer;
+        private readonly FieldDrawer _fieldDrawer;
+        private readonly FigureDrawer _figureDrawer;
+        private readonly FigureFactory _figureFactory = new FigureFactory();
+
+
         public MainWindow()
         {
             InitializeComponent();
 
             var mainCanvas = this.FindControl<Canvas>("MainCanvas");
-            
             _figureDrawer = new FigureDrawer(new TileDrawer(mainCanvas));
             _fieldDrawer = new FieldDrawer(new TileDrawer(mainCanvas));
 
-            Game = new Game(new RandomNextFigureFactory());
-            Game.FigureStateChanged += GameOnFigureStateChanged;
-            Game.LinesChanged += GameOnLinesChanged;
-            Game.StateChanged += GameOnStateChanged;
-            
-            Game.Field = Field.CreateField(FieldHelper.FieldDefaultWidth, FieldHelper.FieldDefaultHeight, "DimGray");
-            Game.ResetFigure(_figureFactory.CreateRandomFigure());
+            _game = new Game(new RandomNextFigureFactory());
+            _game.FigureStateChanged += GameOnFigureStateChanged;
+            _game.ScoreChanged += GameOnScoreChanged;
+            _game.StateChanged += GameOnStateChanged;
+            _game.LevelChanged += GameOnLevelChanged;
 
-            _figureDrawer.DrawFigure(Game.Figure, Game.FigurePositionX, Game.FigurePositionY);
-            _fieldDrawer.AttachToField(Game.Field);
+            _game.Field = Field.CreateField(FieldHelper.FieldDefaultWidth, FieldHelper.FieldDefaultHeight, "DimGray");
+            _game.ResetFigure(_figureFactory.CreateRandomFigure());
 
+            _figureDrawer.DrawFigure(_game.Figure, _game.FigurePositionX, _game.FigurePositionY);
+            _fieldDrawer.AttachToField(_game.Field);
 
             _timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(10)};
-
-            _timer.Tick += (sender, args) => { Game.Tick(); };
-
+            _timer.Tick += (sender, args) => { _game.Tick(); };
             _timer.Start();
         }
 
@@ -45,59 +47,60 @@ namespace UglyTetris.AvaloniaGUI
         {
             AvaloniaXamlLoader.Load(this);
         }
-        
+
         private void GameOnStateChanged(object sender, EventArgs e)
         {
-            if (Game.State == GameState.GameOver)
+            if (_game.State == GameState.GameOver)
             {
                 _timer.Stop();
-                
-                var gameOverTextBlock = this.FindControl<TextBlock>("LineCountTextBlock");
+
+                var gameOverTextBlock = this.FindControl<TextBlock>("ScoreTextBlock");
                 gameOverTextBlock.IsVisible = true; //todo this does not work
             }
         }
 
-        private void GameOnLinesChanged(object sender, EventArgs e)
+        private void GameOnScoreChanged(object sender, EventArgs e)
         {
-            var lineCountTextBlock = this.FindControl<TextBlock>("LineCountTextBlock");
-            lineCountTextBlock.Text = Game.Lines.ToString(CultureInfo.InvariantCulture);
+            var scoreTextBlock = this.FindControl<TextBlock>("ScoreTextBlock");
+            scoreTextBlock.Text = _game.Score.ToString(CultureInfo.InvariantCulture);
+            _game.CheckLevelChange();
+        }
+
+        private void GameOnLevelChanged(object sender, EventArgs e)
+        {
+            var levelTextBlock = this.FindControl<TextBlock>("LevelTextBlock");
+            levelTextBlock.Text = _game.Level.ToString(CultureInfo.InvariantCulture);
+            _game.GoToNextLevel();
         }
 
         private void GameOnFigureStateChanged(object sender, EventArgs e)
         {
-            _figureDrawer.DrawFigure(Game.Figure, Game.FigurePositionX, Game.FigurePositionY);
+            _figureDrawer.DrawFigure(_game.Figure, _game.FigurePositionX, _game.FigurePositionY);
         }
 
-
-        public Game Game;
-        private readonly DispatcherTimer _timer;
-        private FieldDrawer _fieldDrawer;
-        private FigureDrawer _figureDrawer;
-        private FigureFactory _figureFactory = new FigureFactory();
-        
         private void MoveLeft()
         {
-            Game.MoveLeft();
+            _game.MoveLeft();
         }
 
         private void MoveRight()
         {
-            Game.MoveRight();
+            _game.MoveRight();
         }
-        
+
         private void MoveDown()
         {
-            Game.MoveDown();
+            _game.MoveDown();
         }
 
         private void Rotate()
         {
-            Game.Rotate();
+            _game.Rotate();
         }
 
         private void Drop()
         {
-            Game.Drop();
+            _game.Drop();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -121,17 +124,17 @@ namespace UglyTetris.AvaloniaGUI
                     break;
             }
         }
-        
+
         private void HandleLeftButton(object sender, RoutedEventArgs e)
         {
             MoveLeft();
         }
-        
+
         private void HandleRightButton(object sender, RoutedEventArgs e)
         {
             MoveRight();
         }
-        
+
         private void HandleUpButton(object sender, RoutedEventArgs e)
         {
             Rotate();
@@ -150,11 +153,11 @@ namespace UglyTetris.AvaloniaGUI
 
     internal class RandomNextFigureFactory : INextFigureFactory
     {
+        private readonly FigureFactory _figureFactory = new FigureFactory();
+
         public Figure GetNextFigure()
         {
             return _figureFactory.CreateRandomFigure();
         }
-
-        readonly FigureFactory _figureFactory = new FigureFactory();
     }
 }

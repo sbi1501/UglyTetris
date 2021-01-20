@@ -24,9 +24,10 @@
                 <Button Click="HandleSpaceButton" Focusable="False">Drop</Button>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="1">
-                <TextBlock FontSize="50" FontFamily="Bauhaus 93" Margin="50, 0, 0,0" Foreground="#FF3BB827">Lines:</TextBlock>
-                <TextBlock FontSize="80" Margin="50,0,0,0" Name="LineCountTextBlock" FontFamily="Bauhaus 93"
-                           Foreground="#FFCD1D1D" />
+                <TextBlock FontSize="50" FontFamily="Bauhaus 93" Margin="50, 0, 0,0" Foreground="#FF3BB827">Level:</TextBlock>
+                <TextBlock FontSize="80" Margin="50,0,0,0" Name="LevelTextBlock" FontFamily="Bauhaus 93" Foreground="#FFCD1D1D">0</TextBlock>
+                <TextBlock FontSize="50" FontFamily="Bauhaus 93" Margin="50, 0, 0,0" Foreground="#FF3BB827">Score:</TextBlock>
+                <TextBlock FontSize="80" Margin="50,0,0,0" Name="ScoreTextBlock" FontFamily="Bauhaus 93" Foreground="#FFCD1D1D">0</TextBlock>
             </StackPanel>
         </Grid>
         <TextBlock FontSize="100" FontFamily="Bauhaus 93" TextAlignment="Center" IsVisible="False"

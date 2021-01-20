@@ -8,29 +8,41 @@ namespace UglyTetris.GameLogic
         {
             _nextFigureFactory = nextFigureFactory;
         }
-        
-        public bool IsFalling { get; set; }
 
-        private int _tickCount = 0;
+        private bool IsFalling { get; set; }
 
-        int MoveDownPeriodTicks { get; } = 50;
+        private int _tickCount;
 
-        private int FallDownPeriodTicks { get; } = 3;
+        private int MoveDownPeriodTicks { get; set; } = 50;
 
+        private int FallDownPeriodTicks { get; set; } = 3;
 
-        private int _lines = 0;
-        public int Lines
+        private int _score;
+
+        public int Score
         {
-            get => _lines;
+            get => _score;
             private set
             {
-                _lines = value;
-                LinesChanged?.Invoke(this, EventArgs.Empty);
+                _score = value;
+                ScoreChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
+        private int _level = 1;
+
+        public int Level
+        {
+            get => _level;
+            private set
+            {
+                _level = value;
+                LevelChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         private GameState _state = GameState.Running;
+
         public GameState State
         {
             get => _state;
@@ -47,44 +59,53 @@ namespace UglyTetris.GameLogic
             {
                 return;
             }
-            
+
             _tickCount++;
 
-            bool moveDown = IsFalling
+            var moveDown = IsFalling
                 ? (_tickCount % FallDownPeriodTicks == 0)
                 : (_tickCount % MoveDownPeriodTicks == 0);
 
+            if (!moveDown) return;
+            var y = FigurePositionY + 1;
+            var x = FigurePositionX;
 
-            if (moveDown)
+            if (!Field.IsPossibleToPlaceFigure(Figure, x, y))
             {
-                var y = FigurePositionY + 1;
-                var x = FigurePositionX;
+                Field.LockFigure(Figure, FigurePositionX, FigurePositionY, true);
 
-                if (!Field.IsPossibleToPlaceFigure(Figure, x, y))
+                var lineCount = Field.RemoveFullLines();
+                if (lineCount != 0)
                 {
-                    Field.LockFigure(Figure, FigurePositionX, FigurePositionY, true);
-                    
-                    var lineCount = Field.RemoveFullLines();
-                    Lines += lineCount;
-
-                    RaiseFigureStateChanged();
-
-                    var figure = _nextFigureFactory.GetNextFigure();
-
-                    if (!ResetFigure(figure))
+                    var score = lineCount switch
                     {
-                        State = GameState.GameOver;
-                    }
-                    
-                    _tickCount = 0;
-                    IsFalling = false;
+                        1 => 100,
+                        2 => 300,
+                        3 => 700,
+                        4 => 1500,
+                        _ => 0
+                    };
+
+                    Score += score;
                 }
-                else
+
+                RaiseFigureStateChanged();
+
+                var figure = _nextFigureFactory.GetNextFigure();
+
+                if (!ResetFigure(figure))
                 {
-                    FigurePositionX = x;
-                    FigurePositionY = y;
-                    RaiseFigureStateChanged();
+                    State = GameState.GameOver;
                 }
+
+                _tickCount = 0;
+                IsFalling = false;
+            }
+            else
+            {
+                FigurePositionX = x;
+                FigurePositionY = y;
+                RaiseFigureStateChanged();
             }
         }
 
@@ -113,11 +134,11 @@ namespace UglyTetris.GameLogic
 
             RaiseFigureStateChanged();
         }
-        
+
         public void MoveDown()
         {
             FigurePositionY++;
-            
+
             if (!Field.IsPossibleToPlaceFigure(Figure, FigurePositionX, FigurePositionY))
             {
                 FigurePositionY--;
@@ -134,6 +155,7 @@ namespace UglyTetris.GameLogic
             {
                 Figure.RotateLeft();
             }
+
             RaiseFigureStateChanged();
         }
 
@@ -145,23 +167,23 @@ namespace UglyTetris.GameLogic
         public Figure Figure { get; private set; } = new Figure();
 
         public event EventHandler FigureStateChanged;
+
         protected void RaiseFigureStateChanged()
         {
             FigureStateChanged?.Invoke(this, EventArgs.Empty);
         }
-        
-        public event EventHandler LinesChanged; // may be replaced with INotifyPropertyChanged interface implementation
-        
-        public event EventHandler StateChanged; // may be replaced with INotifyPropertyChanged interface implementation
 
-        
+        public event EventHandler StateChanged;
+        public event EventHandler ScoreChanged;
+        public event EventHandler LevelChanged;
+
 
         public int FigurePositionX { get; private set; } = 6;
 
-        public int FigurePositionY { get; private set; } = 0;
+        public int FigurePositionY { get; private set; }
 
         public Field Field;
-        
+
 
         public bool ResetFigure(Figure newFigure)
         {
@@ -177,6 +199,22 @@ namespace UglyTetris.GameLogic
             return false; //cannot reset figure
         }
 
-        private INextFigureFactory _nextFigureFactory;
+        private readonly INextFigureFactory _nextFigureFactory;
+
+        public void CheckLevelChange()
+        {
+            var level = Score / 1000;
+            if (level != Level)
+            {
+                Level = level;
+            }
+        }
+
+        public void GoToNextLevel()
+        {
+            MoveDownPeriodTicks /= 2;
+
+            Field.AddLineBelow();
+        }
     }
 }
